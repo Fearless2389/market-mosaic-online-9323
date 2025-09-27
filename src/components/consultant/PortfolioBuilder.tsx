@@ -1,0 +1,222 @@
+import React, { useState } from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { X, Plus, Search } from 'lucide-react';
+import { mockStocks } from '@/utils/stocksApi';
+import { PortfolioHolding } from '@/pages/Consultant';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+
+interface PortfolioBuilderProps {
+  portfolio: PortfolioHolding[];
+  onUpdate: (portfolio: PortfolioHolding[]) => void;
+}
+
+export function PortfolioBuilder({ portfolio, onUpdate }: PortfolioBuilderProps) {
+  const [selectedStock, setSelectedStock] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const addStock = () => {
+    if (!selectedStock || !quantity || parseFloat(quantity) <= 0) return;
+
+    const existingIndex = portfolio.findIndex(h => h.symbol === selectedStock);
+    
+    if (existingIndex >= 0) {
+      // Update existing holding
+      const updatedPortfolio = [...portfolio];
+      updatedPortfolio[existingIndex].quantity += parseFloat(quantity);
+      onUpdate(updatedPortfolio);
+    } else {
+      // Add new holding
+      const stock = mockStocks.find(s => s.symbol === selectedStock);
+      const newHolding: PortfolioHolding = {
+        symbol: selectedStock,
+        quantity: parseFloat(quantity),
+        purchasePrice: stock?.price
+      };
+      onUpdate([...portfolio, newHolding]);
+    }
+
+    setSelectedStock('');
+    setQuantity('');
+  };
+
+  const removeStock = (symbol: string) => {
+    onUpdate(portfolio.filter(h => h.symbol !== symbol));
+  };
+
+  const loadSamplePortfolio = () => {
+    const samplePortfolio: PortfolioHolding[] = [
+      { symbol: 'AAPL', quantity: 50, purchasePrice: 180.00 },
+      { symbol: 'MSFT', quantity: 25, purchasePrice: 395.00 },
+      { symbol: 'GOOGL', quantity: 15, purchasePrice: 160.00 },
+      { symbol: 'NVDA', quantity: 10, purchasePrice: 920.00 },
+    ];
+    onUpdate(samplePortfolio);
+  };
+
+  const getTotalValue = () => {
+    return portfolio.reduce((total, holding) => {
+      const stock = mockStocks.find(s => s.symbol === holding.symbol);
+      return total + (stock ? stock.price * holding.quantity : 0);
+    }, 0);
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Add Stock Form */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="space-y-2">
+          <Label htmlFor="stock-search">Stock Symbol</Label>
+          <Popover open={searchOpen} onOpenChange={setSearchOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={searchOpen}
+                className="w-full justify-between"
+              >
+                {selectedStock || "Search stocks..."}
+                <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0">
+              <Command>
+                <CommandInput placeholder="Search stocks..." />
+                <CommandList>
+                  <CommandEmpty>No stocks found.</CommandEmpty>
+                  <CommandGroup>
+                    {mockStocks.map((stock) => (
+                      <CommandItem
+                        key={stock.symbol}
+                        value={stock.symbol}
+                        onSelect={(value) => {
+                          setSelectedStock(value);
+                          setSearchOpen(false);
+                        }}
+                      >
+                        <div className="flex justify-between w-full">
+                          <span className="font-medium">{stock.symbol}</span>
+                          <span className="text-muted-foreground text-sm">${stock.price}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">{stock.name}</div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="quantity">Shares</Label>
+          <Input
+            id="quantity"
+            type="number"
+            placeholder="0"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            min="0.01"
+            step="0.01"
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label>&nbsp;</Label>
+          <Button onClick={addStock} className="w-full">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Stock
+          </Button>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="flex gap-2">
+        <Button variant="outline" size="sm" onClick={loadSamplePortfolio}>
+          Load Sample Portfolio
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => onUpdate([])}>
+          Clear All
+        </Button>
+      </div>
+
+      {/* Current Holdings */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="font-medium">Current Holdings</h3>
+          {portfolio.length > 0 && (
+            <Badge variant="secondary">
+              Total Value: ${getTotalValue().toLocaleString()}
+            </Badge>
+          )}
+        </div>
+
+        {portfolio.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+              <Plus className="h-8 w-8" />
+            </div>
+            <p>No stocks in your portfolio yet</p>
+            <p className="text-sm">Add some stocks to get started</p>
+          </div>
+        ) : (
+          <div className="space-y-2 max-h-60 overflow-y-auto">
+            {portfolio.map((holding, index) => {
+              const stock = mockStocks.find(s => s.symbol === holding.symbol);
+              const currentValue = stock ? stock.price * holding.quantity : 0;
+              const gainLoss = holding.purchasePrice 
+                ? ((stock?.price || 0) - holding.purchasePrice) * holding.quantity
+                : 0;
+              
+              return (
+                <Card key={index} className="p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline">{holding.symbol}</Badge>
+                        <span className="text-sm font-medium">{holding.quantity} shares</span>
+                      </div>
+                      <div className="flex items-center gap-4 mt-1 text-xs text-muted-foreground">
+                        <span>Current: ${stock?.price.toFixed(2) || 'N/A'}</span>
+                        <span>Value: ${currentValue.toLocaleString()}</span>
+                        {gainLoss !== 0 && (
+                          <span className={`font-medium ${gainLoss > 0 ? 'text-success' : 'text-danger'}`}>
+                            {gainLoss > 0 ? '+' : ''}${gainLoss.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeStock(holding.symbol)}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
