@@ -78,8 +78,9 @@ const Analysis = () => {
     const { root, depth, x, y, width, height, index, name, changePercent, value } = props;
     
     // Color based on change percent (green for positive, red for negative)
-    const color = changePercent >= 0 ? "#4ade80" : "#f87171";
-    const cellValue = changePercent >= 0 ? `+${changePercent.toFixed(2)}%` : `${changePercent.toFixed(2)}%`;
+    const safeChangePercent = changePercent ?? 0;
+    const color = safeChangePercent >= 0 ? "#4ade80" : "#f87171";
+    const cellValue = safeChangePercent >= 0 ? `+${safeChangePercent.toFixed(2)}%` : `${safeChangePercent.toFixed(2)}%`;
 
     return (
       <g>
@@ -195,9 +196,9 @@ const Analysis = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">${crypto.price < 1 ? crypto.price.toFixed(4) : crypto.price.toFixed(2)}</div>
-                  <div className={`text-sm ${crypto.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {crypto.change >= 0 ? '+' : ''}{crypto.change.toFixed(2)}%
+                  <div className="text-2xl font-bold">${(crypto.price ?? 0) < 1 ? (crypto.price ?? 0).toFixed(4) : (crypto.price ?? 0).toFixed(2)}</div>
+                  <div className={`text-sm ${(crypto.change ?? 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {(crypto.change ?? 0) >= 0 ? '+' : ''}{(crypto.change ?? 0).toFixed(2)}%
                   </div>
                   <div className="mt-2 text-xs text-muted-foreground">
                     <div className="flex justify-between">
@@ -228,7 +229,7 @@ const Analysis = () => {
                     <LineChart data={btcHistoryData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                       <XAxis dataKey="day" />
                       <YAxis domain={['auto', 'auto']} />
-                      <Tooltip formatter={(value) => [`$${Number(value).toFixed(2)}`, 'Price']} />
+                      <Tooltip formatter={(value) => [`$${Number(value ?? 0).toFixed(2)}`, 'Price']} />
                       <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                       <Line 
                         type="monotone" 
@@ -256,7 +257,7 @@ const Analysis = () => {
                     <LineChart data={ethHistoryData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                       <XAxis dataKey="day" />
                       <YAxis domain={['auto', 'auto']} />
-                      <Tooltip formatter={(value) => [`$${Number(value).toFixed(2)}`, 'Price']} />
+                      <Tooltip formatter={(value) => [`$${Number(value ?? 0).toFixed(2)}`, 'Price']} />
                       <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                       <Line 
                         type="monotone" 
@@ -300,10 +301,10 @@ const Analysis = () => {
                           </div>
                         </td>
                         <td className="text-right py-3 px-4">
-                          ${crypto.price < 1 ? crypto.price.toFixed(4) : crypto.price.toFixed(2)}
+                          ${(crypto.price ?? 0) < 1 ? (crypto.price ?? 0).toFixed(4) : (crypto.price ?? 0).toFixed(2)}
                         </td>
-                        <td className={`text-right py-3 px-4 ${crypto.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                          {crypto.change >= 0 ? '+' : ''}{crypto.change.toFixed(2)}%
+                        <td className={`text-right py-3 px-4 ${(crypto.change ?? 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          {(crypto.change ?? 0) >= 0 ? '+' : ''}{(crypto.change ?? 0).toFixed(2)}%
                         </td>
                         <td className="text-right py-3 px-4">{formatNumber(crypto.marketCap)}</td>
                         <td className="text-right py-3 px-4">{formatNumber(crypto.volume)}</td>
