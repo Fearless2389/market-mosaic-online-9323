@@ -14,7 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      portfolio_holdings: {
+        Row: {
+          company_name: string
+          created_at: string | null
+          current_price: number | null
+          exchange: string | null
+          id: string
+          last_synced_at: string | null
+          purchase_date: string | null
+          purchase_price: number
+          quantity: number
+          symbol: string
+          total_investment: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string | null
+          current_price?: number | null
+          exchange?: string | null
+          id?: string
+          last_synced_at?: string | null
+          purchase_date?: string | null
+          purchase_price: number
+          quantity: number
+          symbol: string
+          total_investment?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string | null
+          current_price?: number | null
+          exchange?: string | null
+          id?: string
+          last_synced_at?: string | null
+          purchase_date?: string | null
+          purchase_price?: number
+          quantity?: number
+          symbol?: string
+          total_investment?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
