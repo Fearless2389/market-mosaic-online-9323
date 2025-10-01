@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { 
-  BarChart, PieChart, BarChart3, Wallet, LineChart, Globe, 
-  DollarSign, Settings, ChevronRight, ChevronLeft, Home, Bot
+  BarChart, PieChart, BarChart3, Wallet, LineChart, 
+  Settings, ChevronRight, ChevronLeft, Home, Bot, LogOut
 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -23,6 +24,7 @@ interface NavItem {
 
 export function Sidebar({ isCollapsed, onToggle, className }: SidebarProps) {
   const location = useLocation();
+  const { signOut } = useAuth();
   
   const navItems = [
     {
@@ -39,16 +41,6 @@ export function Sidebar({ isCollapsed, onToggle, className }: SidebarProps) {
       title: 'Markets',
       icon: BarChart3,
       href: '/markets',
-    },
-    {
-      title: 'Currencies',
-      icon: DollarSign,
-      href: '/currencies',
-    },
-    {
-      title: 'Global',
-      icon: Globe,
-      href: '/global',
     },
     {
       title: 'Portfolio',
@@ -131,7 +123,20 @@ export function Sidebar({ isCollapsed, onToggle, className }: SidebarProps) {
         </nav>
       </ScrollArea>
       
-      <div className="p-4 border-t border-sidebar-border">
+      <div className="p-4 border-t border-sidebar-border space-y-2">
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          onClick={signOut}
+        >
+          <LogOut className="h-5 w-5 shrink-0" />
+          <span className={cn(
+            "ml-3 text-sm font-medium transition-opacity duration-200",
+            isCollapsed ? "opacity-0 w-0" : "opacity-100"
+          )}>
+            Sign Out
+          </span>
+        </Button>
         <div className={cn(
           "transition-opacity duration-200 rounded-md bg-sidebar-accent/50 p-2 text-xs text-sidebar-accent-foreground",
           isCollapsed ? "opacity-0" : "opacity-100"

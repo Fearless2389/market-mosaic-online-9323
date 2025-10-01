@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,33 +33,126 @@ export function PortfolioBuilder({ portfolio, onUpdate }: PortfolioBuilderProps)
   const [selectedStock, setSelectedStock] = useState('');
   const [quantity, setQuantity] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
 
-  const addStock = () => {
+  // Load portfolio from database on mount
+  useEffect(() => {
+    loadPortfolio();
+  }, [user]);
+
+  const loadPortfolio = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('portfolio_holdings')
+        .select('*')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      if (data) {
+        const loadedPortfolio: PortfolioHolding[] = data.map(holding => ({
+          symbol: holding.symbol,
+          quantity: holding.quantity,
+          purchasePrice: Number(holding.purchase_price)
+        }));
+        onUpdate(loadedPortfolio);
+      }
+    } catch (error: any) {
+      console.error('Error loading portfolio:', error);
+    }
+  };
+
+  const saveToDatabase = async (holding: PortfolioHolding) => {
+    if (!user) return;
+
+    try {
+      const stock = mockStocks.find(s => s.symbol === holding.symbol);
+      
+      const { error } = await supabase
+        .from('portfolio_holdings')
+        .upsert({
+          user_id: user.id,
+          symbol: holding.symbol,
+          company_name: stock?.name || holding.symbol,
+          exchange: 'NSE',
+          quantity: holding.quantity,
+          purchase_price: holding.purchasePrice || stock?.price || 0,
+          current_price: stock?.price || null,
+          last_synced_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,symbol'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Portfolio updated successfully',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const deleteFromDatabase = async (symbol: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('portfolio_holdings')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('symbol', symbol);
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const addStock = async () => {
     if (!selectedStock || !quantity || parseFloat(quantity) <= 0) return;
 
     const existingIndex = portfolio.findIndex(h => h.symbol === selectedStock);
+    
+    let updatedHolding: PortfolioHolding;
     
     if (existingIndex >= 0) {
       // Update existing holding
       const updatedPortfolio = [...portfolio];
       updatedPortfolio[existingIndex].quantity += parseFloat(quantity);
+      updatedHolding = updatedPortfolio[existingIndex];
       onUpdate(updatedPortfolio);
     } else {
       // Add new holding
       const stock = mockStocks.find(s => s.symbol === selectedStock);
-      const newHolding: PortfolioHolding = {
+      updatedHolding = {
         symbol: selectedStock,
         quantity: parseFloat(quantity),
         purchasePrice: stock?.price
       };
-      onUpdate([...portfolio, newHolding]);
+      onUpdate([...portfolio, updatedHolding]);
     }
+
+    await saveToDatabase(updatedHolding);
 
     setSelectedStock('');
     setQuantity('');
   };
 
-  const removeStock = (symbol: string) => {
+  const removeStock = async (symbol: string) => {
+    await deleteFromDatabase(symbol);
     onUpdate(portfolio.filter(h => h.symbol !== symbol));
   };
 
