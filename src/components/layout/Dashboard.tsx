@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { 
-  useStockData, useMarketIndices, useCurrencyPairs, 
-  mockStocks, mockIndices, mockCurrencies, mockNews,
+  useStockData, useMarketIndices, 
+  mockStocks, mockIndices, mockNews,
   generatePriceHistory 
 } from '@/utils/stocksApi';
 import { Navbar } from '@/components/layout/Navbar';
@@ -10,7 +10,6 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { StockCard } from '@/components/stocks/StockCard';
 import { StockChart } from '@/components/stocks/StockChart';
 import { MarketOverview } from '@/components/markets/MarketOverview';
-import { CurrencyExchange } from '@/components/currencies/CurrencyExchange';
 import { NewsCard } from '@/components/news/NewsCard';
 import { StatsCard } from '@/components/ui/StatsCard';
 import { BarChart3, TrendingDown, TrendingUp, Wallet2 } from 'lucide-react';
@@ -22,7 +21,6 @@ export function Dashboard() {
   // Use our hooks to get real-time mock data
   const stocks = useStockData(mockStocks);
   const indices = useMarketIndices(mockIndices);
-  const currencies = useCurrencyPairs(mockCurrencies);
   
   // Generate chart data for the selected stock
   const selectedStockHistory = generatePriceHistory(30, selectedStock.price, 2);
@@ -123,10 +121,9 @@ export function Dashboard() {
                 <NewsCard news={mockNews} className="mt-6" />
               </div>
               
-              {/* Right column - Markets and currencies */}
+              {/* Right column - Markets */}
               <div className="lg:col-span-1 space-y-4 animate-slide-up" style={{ '--delay': '400ms' } as React.CSSProperties}>
                 <MarketOverview indices={indices} />
-                <CurrencyExchange currencies={currencies} />
               </div>
             </div>
           </div>

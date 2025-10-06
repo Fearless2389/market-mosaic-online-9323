@@ -2,20 +2,20 @@
 import React, { useState, useEffect } from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, Treemap, LineChart, Line } from 'recharts';
-import { mockStocks, mockCryptos, generatePriceHistory, formatNumber } from '@/utils/stocksApi';
+import { mockStocks, mockCryptos, generatePriceHistory, formatNumber, formatCurrency } from '@/utils/stocksApi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bitcoin, TrendingUp, TrendingDown } from 'lucide-react';
 
 const Analysis = () => {
-  // Mock data for sector performance
+  // Mock data for sector performance (Indian market sectors)
   const sectorPerformance = [
-    { name: 'Technology', value: 8.2 },
-    { name: 'Healthcare', value: 3.5 },
-    { name: 'Financials', value: -1.2 },
-    { name: 'Consumer', value: 2.8 },
-    { name: 'Energy', value: -2.5 },
-    { name: 'Materials', value: 0.9 },
-    { name: 'Utilities', value: -0.7 },
+    { name: 'Information Technology', value: 8.2 },
+    { name: 'Banking & Financial Services', value: 3.5 },
+    { name: 'Oil & Gas', value: -1.2 },
+    { name: 'Pharmaceuticals', value: 2.8 },
+    { name: 'Automobiles', value: -2.5 },
+    { name: 'FMCG', value: 0.9 },
+    { name: 'Telecommunications', value: -0.7 },
   ];
   
   // Mock data for risk assessment
@@ -196,7 +196,7 @@ const Analysis = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">${(crypto.price ?? 0) < 1 ? (crypto.price ?? 0).toFixed(4) : (crypto.price ?? 0).toFixed(2)}</div>
+                  <div className="text-2xl font-bold">₹{(crypto.price ?? 0) < 1 ? (crypto.price ?? 0).toFixed(4) : (crypto.price ?? 0).toFixed(2)}</div>
                   <div className={`text-sm ${(crypto.change ?? 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {(crypto.change ?? 0) >= 0 ? '+' : ''}{(crypto.change ?? 0).toFixed(2)}%
                   </div>
@@ -229,7 +229,7 @@ const Analysis = () => {
                     <LineChart data={btcHistoryData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                       <XAxis dataKey="day" />
                       <YAxis domain={['auto', 'auto']} />
-                      <Tooltip formatter={(value) => [`$${Number(value ?? 0).toFixed(2)}`, 'Price']} />
+                      <Tooltip formatter={(value) => [`₹${Number(value ?? 0).toFixed(2)}`, 'Price']} />
                       <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                       <Line 
                         type="monotone" 
@@ -257,7 +257,7 @@ const Analysis = () => {
                     <LineChart data={ethHistoryData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                       <XAxis dataKey="day" />
                       <YAxis domain={['auto', 'auto']} />
-                      <Tooltip formatter={(value) => [`$${Number(value ?? 0).toFixed(2)}`, 'Price']} />
+                      <Tooltip formatter={(value) => [`₹${Number(value ?? 0).toFixed(2)}`, 'Price']} />
                       <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                       <Line 
                         type="monotone" 
@@ -301,7 +301,7 @@ const Analysis = () => {
                           </div>
                         </td>
                         <td className="text-right py-3 px-4">
-                          ${(crypto.price ?? 0) < 1 ? (crypto.price ?? 0).toFixed(4) : (crypto.price ?? 0).toFixed(2)}
+                          ₹{(crypto.price ?? 0) < 1 ? (crypto.price ?? 0).toFixed(4) : (crypto.price ?? 0).toFixed(2)}
                         </td>
                         <td className={`text-right py-3 px-4 ${(crypto.change ?? 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                           {(crypto.change ?? 0) >= 0 ? '+' : ''}{(crypto.change ?? 0).toFixed(2)}%
@@ -369,7 +369,7 @@ const Analysis = () => {
           <div className="space-y-4">
             <div className="flex justify-between p-3 border rounded-md">
               <div>
-                <h3 className="font-medium">S&P 500</h3>
+                <h3 className="font-medium">Nifty 50</h3>
                 <p className="text-sm text-muted-foreground">Moving Averages</p>
               </div>
               <div className="text-right">
@@ -379,7 +379,7 @@ const Analysis = () => {
             </div>
             <div className="flex justify-between p-3 border rounded-md">
               <div>
-                <h3 className="font-medium">Nasdaq</h3>
+                <h3 className="font-medium">BSE Sensex</h3>
                 <p className="text-sm text-muted-foreground">Moving Averages</p>
               </div>
               <div className="text-right">
@@ -389,7 +389,7 @@ const Analysis = () => {
             </div>
             <div className="flex justify-between p-3 border rounded-md">
               <div>
-                <h3 className="font-medium">Dow Jones</h3>
+                <h3 className="font-medium">Bank Nifty</h3>
                 <p className="text-sm text-muted-foreground">Moving Averages</p>
               </div>
               <div className="text-right">
@@ -399,7 +399,7 @@ const Analysis = () => {
             </div>
             <div className="flex justify-between p-3 border rounded-md">
               <div>
-                <h3 className="font-medium">Russell 2000</h3>
+                <h3 className="font-medium">Nifty IT</h3>
                 <p className="text-sm text-muted-foreground">Moving Averages</p>
               </div>
               <div className="text-right">

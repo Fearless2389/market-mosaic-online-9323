@@ -405,18 +405,18 @@ export function generatePriceHistory(days: number = 30, startPrice: number = 100
 
 export function formatNumber(num: number): string {
   if (num >= 1000000000000) {
-    return `$${(num / 1000000000000).toFixed(2)}T`;
+    return `₹${(num / 1000000000000).toFixed(2)}T`;
   }
   if (num >= 1000000000) {
-    return `$${(num / 1000000000).toFixed(2)}B`;
+    return `₹${(num / 1000000000).toFixed(2)}B`;
   }
   if (num >= 1000000) {
-    return `$${(num / 1000000).toFixed(2)}M`;
+    return `₹${(num / 1000000).toFixed(2)}M`;
   }
   if (num >= 1000) {
-    return `$${(num / 1000).toFixed(2)}K`;
+    return `₹${(num / 1000).toFixed(2)}K`;
   }
-  return `$${num.toFixed(2)}`;
+  return `₹${num.toFixed(2)}`;
 }
 
 export function formatPercentage(num: number): string {

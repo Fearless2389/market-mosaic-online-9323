@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { TrendingUp, TrendingDown, DollarSign, Activity } from 'lucide-react';
 import { PortfolioHolding } from '@/pages/Consultant';
-import { mockStocks } from '@/utils/stocksApi';
+import { mockStocks, formatCurrency } from '@/utils/stocksApi';
 
 interface PortfolioSummaryProps {
   portfolio: PortfolioHolding[];
@@ -71,17 +71,19 @@ export function PortfolioSummary({ portfolio, detailed = false }: PortfolioSumma
     gainLoss: item.gainLoss
   }));
 
-  // Sector analysis (simplified - based on known stock sectors)
+  // Sector analysis (simplified - based on Indian stock sectors)
   const getSector = (symbol: string) => {
     const sectors: { [key: string]: string } = {
-      AAPL: 'Technology',
-      MSFT: 'Technology',
-      GOOGL: 'Technology',
-      AMZN: 'Consumer Discretionary',
-      NVDA: 'Technology',
-      TSLA: 'Consumer Discretionary',
-      META: 'Technology',
-      V: 'Financial Services'
+      RELIANCE: 'Oil & Gas',
+      TCS: 'Technology',
+      HDFCBANK: 'Banking & Financial Services',
+      INFY: 'Technology',
+      ICICIBANK: 'Banking & Financial Services',
+      BHARTIARTL: 'Telecommunications',
+      SBIN: 'Banking & Financial Services',
+      WIPRO: 'Technology',
+      LT: 'Construction & Engineering',
+      AXISBANK: 'Banking & Financial Services'
     };
     return sectors[symbol] || 'Other';
   };
@@ -130,7 +132,7 @@ export function PortfolioSummary({ portfolio, detailed = false }: PortfolioSumma
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Total Value</p>
-              <p className="text-2xl font-bold">${totalValue.toLocaleString()}</p>
+              <p className="text-2xl font-bold">{formatCurrency(totalValue)}</p>
             </div>
             <DollarSign className="h-8 w-8 text-primary" />
           </div>
@@ -141,7 +143,7 @@ export function PortfolioSummary({ portfolio, detailed = false }: PortfolioSumma
             <div>
               <p className="text-sm text-muted-foreground">Total Gain/Loss</p>
               <p className={`text-2xl font-bold ${totalGainLoss >= 0 ? 'text-success' : 'text-danger'}`}>
-                {totalGainLoss >= 0 ? '+' : ''}${totalGainLoss.toFixed(2)}
+                {totalGainLoss >= 0 ? '+' : ''}{formatCurrency(totalGainLoss)}
               </p>
             </div>
             {totalGainLoss >= 0 ? (
@@ -206,7 +208,7 @@ export function PortfolioSummary({ portfolio, detailed = false }: PortfolioSumma
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Value']} />
+                    <Tooltip formatter={(value: number) => [formatCurrency(value), 'Value']} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -223,7 +225,7 @@ export function PortfolioSummary({ portfolio, detailed = false }: PortfolioSumma
                     <YAxis />
                     <Tooltip 
                       formatter={(value: number, name: string) => [
-                        name === 'gainLoss' ? `$${value.toFixed(2)}` : `$${value.toLocaleString()}`,
+                        formatCurrency(value),
                         name === 'gainLoss' ? 'Gain/Loss' : 'Current Value'
                       ]}
                     />
@@ -243,7 +245,7 @@ export function PortfolioSummary({ portfolio, detailed = false }: PortfolioSumma
                 <div key={sector.name} className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">{sector.name}</span>
-                    <span>${sector.value.toLocaleString()} ({sector.percentage.toFixed(1)}%)</span>
+                    <span>{formatCurrency(sector.value)} ({sector.percentage.toFixed(1)}%)</span>
                   </div>
                   <Progress value={sector.percentage} className="h-2" />
                 </div>
@@ -276,10 +278,10 @@ export function PortfolioSummary({ portfolio, detailed = false }: PortfolioSumma
                         </div>
                       </td>
                       <td className="text-right p-2">{item.quantity}</td>
-                      <td className="text-right p-2">${item.currentPrice.toFixed(2)}</td>
-                      <td className="text-right p-2">${item.currentValue.toLocaleString()}</td>
+                      <td className="text-right p-2">{formatCurrency(item.currentPrice)}</td>
+                      <td className="text-right p-2">{formatCurrency(item.currentValue)}</td>
                       <td className={`text-right p-2 ${item.gainLoss >= 0 ? 'text-success' : 'text-danger'}`}>
-                        {item.gainLoss >= 0 ? '+' : ''}${item.gainLoss.toFixed(2)}
+                        {item.gainLoss >= 0 ? '+' : ''}{formatCurrency(item.gainLoss)}
                         <br />
                         <span className="text-xs">
                           ({item.gainLossPercent >= 0 ? '+' : ''}{item.gainLossPercent.toFixed(1)}%)
