@@ -32,6 +32,16 @@ export interface NewsItem {
   url: string;
   imageUrl?: string;
   publishedAt: Date;
+  relatedSymbols?: string[];
+}
+
+export interface CurrencyPair {
+  symbol: string;
+  fromCurrency: string;
+  toCurrency: string;
+  rate: number;
+  change: number;
+  changePercent: number;
 }
 
 // ✅ Mock data (fallback)
@@ -164,6 +174,27 @@ export function useMarketIndices(initial: MarketIndex[]) {
     return () => clearInterval(interval);
   }, []);
   return data;
+}
+
+// ✅ Helper utility functions
+export function formatPercentage(value: number): string {
+  const sign = value >= 0 ? "+" : "";
+  return `${sign}${value.toFixed(2)}%`;
+}
+
+export function formatNumber(value: number): string {
+  if (value >= 10000000) return `₹${(value / 10000000).toFixed(2)}Cr`;
+  if (value >= 100000) return `₹${(value / 100000).toFixed(2)}L`;
+  return `₹${value.toLocaleString("en-IN")}`;
+}
+
+export function formatDate(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleDateString("en-IN", { 
+    year: "numeric", 
+    month: "short", 
+    day: "numeric" 
+  });
 }
 
 // ✅ Environment keys

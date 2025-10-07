@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowUpIcon, ArrowDownIcon, BarChart3Icon } from 'lucide-react';
 import { Stock, formatCurrency, formatPercentage, formatNumber, formatDate } from '@/utils/stocksApi';
 import { Sparkline } from '@/components/stocks/Sparkline';
-import { formatCurrency } from '@/utils/stocksApi';
 import { cn } from '@/lib/utils';
 
 interface StockCardProps {

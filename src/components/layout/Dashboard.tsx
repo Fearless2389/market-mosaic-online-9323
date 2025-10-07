@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { 
   useStockData, 
   useMarketIndices, 
-  generatePriceHistory 
+  generatePriceHistory,
+  mockStocks,
+  mockIndices
 } from '@/utils/stocksApi';
 import { Navbar } from '@/components/layout/Navbar';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -13,30 +15,13 @@ import { NewsCard } from '@/components/news/NewsCard';
 import { StatsCard } from '@/components/ui/StatsCard';
 import { BarChart3, TrendingDown, TrendingUp, Wallet2 } from 'lucide-react';
 
-// Default list of popular Indian stocks
-const indianWatchlist = [
-  { symbol: "RELIANCE", name: "Reliance Industries Ltd" },
-  { symbol: "TCS", name: "Tata Consultancy Services Ltd" },
-  { symbol: "HDFCBANK", name: "HDFC Bank Ltd" },
-  { symbol: "INFY", name: "Infosys Ltd" },
-  { symbol: "ICICIBANK", name: "ICICI Bank Ltd" }
-];
-
-// Default Indian indices
-const indianIndices = [
-  { symbol: "NIFTY_50", name: "NIFTY 50" },
-  { symbol: "SENSEX", name: "BSE SENSEX" },
-  { symbol: "BANKNIFTY", name: "NIFTY Bank" },
-  { symbol: "NIFTY_IT", name: "NIFTY IT" }
-];
-
 export function Dashboard() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [selectedStock, setSelectedStock] = useState(indianWatchlist[0]);
+  const [selectedStock, setSelectedStock] = useState(mockStocks[0]);
 
   // ✅ Fetch live or fallback data
-  const stocks = useStockData(indianWatchlist);
-  const indices = useMarketIndices(indianIndices);
+  const stocks = useStockData(mockStocks);
+  const indices = useMarketIndices(mockIndices);
 
   // ✅ Generate chart data for selected stock
   const selectedStockData = stocks.find(s => s.symbol === selectedStock.symbol);
@@ -155,18 +140,20 @@ export function Dashboard() {
                 <NewsCard 
                   news={[
                     {
+                      id: "1",
                       title: "Nifty, Sensex rise amid strong domestic cues",
-                      description: "Markets remain optimistic as IT and banking stocks rally.",
+                      summary: "Markets remain optimistic as IT and banking stocks rally.",
                       source: "Moneycontrol",
                       url: "https://www.moneycontrol.com/",
-                      publishedAt: new Date().toISOString()
+                      publishedAt: new Date()
                     },
                     {
+                      id: "2",
                       title: "Rupee strengthens against USD",
-                      description: "The Indian Rupee gains as FII inflows continue.",
+                      summary: "The Indian Rupee gains as FII inflows continue.",
                       source: "Economic Times",
                       url: "https://economictimes.indiatimes.com/",
-                      publishedAt: new Date().toISOString()
+                      publishedAt: new Date()
                     }
                   ]}
                   className="mt-6"
