@@ -251,6 +251,21 @@ export function useLiveIndices() {
   return indices.length > 0 ? indices : mockIndices;
 }
 
+// Format currency values for Indian stocks
+export function formatCurrency(value: number) {
+  if (!value && value !== 0) return "-";
+  
+  // Handle large numbers (crores, lakhs)
+  if (value >= 1_00_00_000) {
+    return `₹${(value / 1_00_00_000).toFixed(2)} Cr`;
+  } else if (value >= 1_00_000) {
+    return `₹${(value / 1_00_000).toFixed(2)} L`;
+  }
+  
+  // Default format for smaller values
+  return `₹${value.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
+}
+
 // ✅ Fetch Market News
 export async function fetchMarketNews() {
   try {
