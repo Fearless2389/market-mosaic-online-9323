@@ -63,7 +63,7 @@ export function StockChart({
   const maxPrice = Math.max(...chartData.map(d => d.price)) * 1.02;
   
   const formatYAxis = (value: number) => {
-    return `$${value.toFixed(2)}`;
+    return `₹${value.toFixed(2)}`;
   };
   
   return (
@@ -129,7 +129,10 @@ export function StockChart({
                   borderRadius: "var(--radius)",
                   boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
                 }}
-                formatter={(value: number) => [`$${value.toFixed(2)}`, 'Price']}
+                formatter={(value: any) => {
+                  const numValue = typeof value === 'number' ? value : parseFloat(value?.price || value || 0);
+                  return [`₹${numValue.toFixed(2)}`, 'Price'];
+                }}
                 labelFormatter={(label) => `Date: ${label}`}
               />
               <Legend />
