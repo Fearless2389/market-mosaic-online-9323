@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { 
-  useStockData, useMarketIndices, 
-  mockStocks, mockIndices, mockNews,
+  useStockData, 
+  useMarketIndices, 
   generatePriceHistory 
 } from '@/utils/stocksApi';
 import { Navbar } from '@/components/layout/Navbar';
@@ -14,41 +13,64 @@ import { NewsCard } from '@/components/news/NewsCard';
 import { StatsCard } from '@/components/ui/StatsCard';
 import { BarChart3, TrendingDown, TrendingUp, Wallet2 } from 'lucide-react';
 
+// Default list of popular Indian stocks
+const indianWatchlist = [
+  { symbol: "RELIANCE", name: "Reliance Industries Ltd" },
+  { symbol: "TCS", name: "Tata Consultancy Services Ltd" },
+  { symbol: "HDFCBANK", name: "HDFC Bank Ltd" },
+  { symbol: "INFY", name: "Infosys Ltd" },
+  { symbol: "ICICIBANK", name: "ICICI Bank Ltd" }
+];
+
+// Default Indian indices
+const indianIndices = [
+  { symbol: "NIFTY_50", name: "NIFTY 50" },
+  { symbol: "SENSEX", name: "BSE SENSEX" },
+  { symbol: "BANKNIFTY", name: "NIFTY Bank" },
+  { symbol: "NIFTY_IT", name: "NIFTY IT" }
+];
+
 export function Dashboard() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [selectedStock, setSelectedStock] = useState(mockStocks[0]);
-  
-  // Use our hooks to get real-time mock data
-  const stocks = useStockData(mockStocks);
-  const indices = useMarketIndices(mockIndices);
-  
-  // Generate chart data for the selected stock
-  const selectedStockHistory = generatePriceHistory(30, selectedStock.price, 2);
-  
-  // Generate chart data for stock cards
-  const stocksWithHistory = stocks.map(stock => {
-    return {
-      ...stock,
-      priceHistory: generatePriceHistory(30, stock.price, 2)
-    };
-  });
-  
-  // Calculate market statistics
+  const [selectedStock, setSelectedStock] = useState(indianWatchlist[0]);
+
+  // ✅ Fetch live or fallback data
+  const stocks = useStockData(indianWatchlist);
+  const indices = useMarketIndices(indianIndices);
+
+  // ✅ Generate chart data for selected stock
+  const selectedStockData = stocks.find(s => s.symbol === selectedStock.symbol);
+  const selectedStockHistory = generatePriceHistory(
+    30,
+    selectedStockData?.price || 1000,
+    2
+  );
+
+  // ✅ Append chart history for watchlist cards
+  const stocksWithHistory = stocks.map(stock => ({
+    ...stock,
+    priceHistory: generatePriceHistory(30, stock.price || 1000, 2)
+  }));
+
+  // ✅ Calculate market insights
   const gainers = stocks.filter(stock => stock.changePercent > 0);
   const losers = stocks.filter(stock => stock.changePercent < 0);
-  
-  const topGainer = [...stocks].sort((a, b) => b.changePercent - a.changePercent)[0];
-  const topLoser = [...stocks].sort((a, b) => a.changePercent - b.changePercent)[0];
-  
-  const totalMarketCap = stocks.reduce((sum, stock) => sum + stock.marketCap, 0);
-  const totalVolume = stocks.reduce((sum, stock) => sum + stock.volume, 0);
-  
-  const toggleSidebar = () => {
-    setIsSidebarCollapsed(prev => !prev);
-  };
-  
+
+  const topGainer = gainers.length > 0 
+    ? gainers.sort((a, b) => b.changePercent - a.changePercent)[0]
+    : { symbol: "—", name: "No Data", changePercent: 0 };
+
+  const topLoser = losers.length > 0 
+    ? losers.sort((a, b) => a.changePercent - b.changePercent)[0]
+    : { symbol: "—", name: "No Data", changePercent: 0 };
+
+  const totalMarketCap = stocks.reduce((sum, s) => sum + (s.marketCap || 0), 0);
+  const totalVolume = stocks.reduce((sum, s) => sum + (s.volume || 0), 0);
+
+  const toggleSidebar = () => setIsSidebarCollapsed(prev => !prev);
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
       
       <div className="flex-1 flex">
@@ -56,21 +78,24 @@ export function Dashboard() {
         
         <main className="flex-1 transition-all duration-300">
           <div className="container max-w-full p-4 lg:p-6 animate-fade-in">
-            <h1 className="text-2xl font-bold mb-6">Market Dashboard</h1>
+            <h1 className="text-2xl font-bold mb-6">Indian Market Dashboard 🇮🇳</h1>
             
-            {/* Stats Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 animate-slide-up" style={{ '--delay': '100ms' } as React.CSSProperties}>
+            {/* 📊 Market Stats */}
+            <div 
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 animate-slide-up"
+              style={{ '--delay': '100ms' } as React.CSSProperties}
+            >
               <StatsCard 
-                title="Market Cap" 
-                value="$13.42T"
+                title="Total Market Cap" 
+                value={`₹${(totalMarketCap / 1e12).toFixed(2)}T`}
                 trend={0.47}
                 icon={<Wallet2 />}
                 className="bg-primary/5"
               />
               <StatsCard 
                 title="Trading Volume" 
-                value="487.32M"
-                description="Today's volume"
+                value={`${(totalVolume / 1e6).toFixed(2)}M`}
+                description="Today's Volume"
                 icon={<BarChart3 />}
                 className="bg-primary/5"
               />
@@ -92,16 +117,20 @@ export function Dashboard() {
               />
             </div>
             
-            {/* Main Content Layout */}
+            {/* 🧭 Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              {/* Left column - Stock list */}
-              <div className="lg:col-span-1 space-y-4 animate-slide-up" style={{ '--delay': '200ms' } as React.CSSProperties}>
+              
+              {/* 🧾 Watchlist */}
+              <div 
+                className="lg:col-span-1 space-y-4 animate-slide-up"
+                style={{ '--delay': '200ms' } as React.CSSProperties}
+              >
                 <h2 className="text-xl font-semibold">Watchlist</h2>
                 <div className="space-y-4">
-                  {stocksWithHistory.slice(0, 5).map((stock) => (
-                    <StockCard 
-                      key={stock.symbol} 
-                      stock={stock} 
+                  {stocksWithHistory.map(stock => (
+                    <StockCard
+                      key={stock.symbol}
+                      stock={stock}
                       priceHistory={stock.priceHistory}
                       onClick={() => setSelectedStock(stock)}
                       className={selectedStock.symbol === stock.symbol ? "ring-2 ring-primary" : ""}
@@ -109,20 +138,46 @@ export function Dashboard() {
                   ))}
                 </div>
               </div>
-              
-              {/* Middle column - Chart and news */}
-              <div className="lg:col-span-2 space-y-4 animate-slide-up" style={{ '--delay': '300ms' } as React.CSSProperties}>
+
+              {/* 📈 Chart + News */}
+              <div 
+                className="lg:col-span-2 space-y-4 animate-slide-up"
+                style={{ '--delay': '300ms' } as React.CSSProperties}
+              >
                 <StockChart 
                   symbol={selectedStock.symbol} 
                   name={selectedStock.name} 
-                  currentPrice={selectedStock.price}
+                  currentPrice={selectedStockData?.price || 1000}
                   volatility={2.5}
                 />
-                <NewsCard news={mockNews} className="mt-6" />
+                
+                {/* 🗞️ News Section */}
+                <NewsCard 
+                  news={[
+                    {
+                      title: "Nifty, Sensex rise amid strong domestic cues",
+                      description: "Markets remain optimistic as IT and banking stocks rally.",
+                      source: "Moneycontrol",
+                      url: "https://www.moneycontrol.com/",
+                      publishedAt: new Date().toISOString()
+                    },
+                    {
+                      title: "Rupee strengthens against USD",
+                      description: "The Indian Rupee gains as FII inflows continue.",
+                      source: "Economic Times",
+                      url: "https://economictimes.indiatimes.com/",
+                      publishedAt: new Date().toISOString()
+                    }
+                  ]}
+                  className="mt-6"
+                />
               </div>
-              
-              {/* Right column - Markets */}
-              <div className="lg:col-span-1 space-y-4 animate-slide-up" style={{ '--delay': '400ms' } as React.CSSProperties}>
+
+              {/* 📊 Indices */}
+              <div 
+                className="lg:col-span-1 space-y-4 animate-slide-up"
+                style={{ '--delay': '400ms' } as React.CSSProperties}
+              >
                 <MarketOverview indices={indices} />
               </div>
             </div>
